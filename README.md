@@ -25,3 +25,5 @@ version in `build/install/lositan`.
 To run just after building:
   - macOS/Linux: `./build/install/lositan/lositan`
   - Windows: `build\install\lositan\lositan.bat`
+
+The directory should contain scripts for: **lositan**, **lositemp**, **mcheza**.
