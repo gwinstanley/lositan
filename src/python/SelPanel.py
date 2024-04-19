@@ -51,13 +51,14 @@ class SelPanel(JDialog, ActionListener):
             if returnVal == JFileChooser.APPROVE_OPTION:
                 fileName = chooser.getSelectedFile().getPath()
                 f = open(fileName, 'w')
-                f.write("\t".join(["Locus", "Het", "Fst", "P(Simul Fst<sample Fst)"]) + "\n")
+                f.write("\t".join(["Locus", "Het", "Fst", "P(Simul Fst<sample Fst)", "FDR"]) + "\n")
                 for i in range(self.data.size()):
                     line = self.data.elementAt(i)
                     lineList = [str(line.elementAt(0))]
                     lineList.append(str(line.elementAt(1)))
                     lineList.append(str(line.elementAt(2)))
                     lineList.append(str(line.elementAt(3)))
+                    lineList.append(str(line.elementAt(4)))
                     f.write("\t".join(lineList) + "\n")
                 f.close()
 
