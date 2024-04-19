@@ -7,7 +7,7 @@ EXTRA_OPTS=
 
 # For Darwin, add options to specify how the application appears in the dock
 if [ "Darwin" = "\$(uname)" ]; then
-    EXTRA_OPTS="\${EXTRA_OPTS} -Xdock:name=${app.title}"
+    EXTRA_OPTS="\${EXTRA_OPTS} -Xdock:name=MCHEZA"
 fi
 
-java -splash:lib/title.gif \${DEFAULT_VM_OPTS} \${EXTRA_OPTS} -jar "\${APP_HOME}/lib/${name}-${version}.jar"
+java -splash:lib/mcheza.jpg \${DEFAULT_VM_OPTS} \${EXTRA_OPTS} -jar "\${APP_HOME}/lib/${name}-${version}.jar" dominant

@@ -1,1 +1,13 @@
+/.gradle/
+/build/
+
+.gradletasknamecache
+!gradle-wrapper.jar
+!gradle-wrapper.properties
+
+/.nb-gradle-properties
+/nbconfiguration.xml
+/.nb-gradle/
+/nbproject/
+
 *.class

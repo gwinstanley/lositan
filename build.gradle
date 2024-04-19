@@ -53,16 +53,18 @@ dependencies {
 
 defaultTasks 'clean', 'distributions'
 
-def javaPlatform = JavaVersion.VERSION_1_8
-sourceCompatibility = javaPlatform
-targetCompatibility = sourceCompatibility
-
+java {
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = sourceCompatibility
+	modularity.inferModulePath = false
+}
 sourceSets {
 	main.java.srcDirs = ['src/java']
 }
 
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
+	modularity.inferModulePath = false
 }
 
 version = '1.0'
@@ -79,6 +81,7 @@ ext {
 	url = 'https://tiago.org/'
 	licenseType = 'GNU General Public License'
 	mainClassName = 'Boot'
+	defaultJvmArguments = ["-Xmx1024m"]
 	tokenMap = [
 		'app.title': name.toUpperCase(),
 		'name': name,
@@ -86,7 +89,7 @@ ext {
 	]
 }
 
-task packagePythonSource(type: Zip) {
+tasks.register('packagePythonSource', Zip) {
 	group = 'build'
 	description 'Assembles a zip archive containing the deployment Python source.'
 	archiveFileName = 'py.zip'
@@ -94,7 +97,7 @@ task packagePythonSource(type: Zip) {
 	from "${projectDir}/src/python"
 }
 
-task packageBioPython(type: Copy) {
+tasks.register('packageBioPython', Copy) {
 	group = 'build'
 	description 'Assembles a folder containing a minimal BioPython distribution.'
 	def dest = file("${buildDir}/tmp/Lib")
@@ -122,78 +125,76 @@ jar {
 		include '*.txt'
 		include '*.temp'
 	}
-	from "${projectDir}/mcheza.jpg"
-	from "${projectDir}/title.gif"
 	manifest {
-		attributes(
+		attributes += [
 			'Build-Jdk': System.getProperty('java.version'),
 			'Created-By': "Gradle ${gradle.gradleVersion}",
 			'Automatic-Module-Name': "${project.group}.${moduleName}",
 			'Class-Path': configurations.runtimeClasspath.collect { it.name }.join(' ') + ' Lib/',
 			'Main-Class': project.mainClassName,
-		)
+		]
 	}
 }
 
-task processScriptTemplates(type: Copy) {
+javadoc {
+	options {
+		addBooleanOption('Xdoclint:all,-missing', true)
+	}
+}
+
+tasks.register('processScriptTemplates', Copy) {
 	description 'Processes start script templates.'
 	from("${projectDir}/src/templates") {
 		filter(ReplaceTokens, tokens: tokenMap, beginToken: '${', endToken: '}')
 	}
-	into buildDir
+	into "${buildDir}/script-templates"
 }
 
 application {
-	mainClassName = project.mainClassName
+	mainClass = project.mainClassName
 	executableDir = ''
-	applicationDefaultJvmArgs = ["-Xmx1024m"]
+	applicationDefaultJvmArgs = project.defaultJvmArguments
 }
 
-// Assign custom script generator template.
-def stNix = "${buildDir}/script-template.sh"
-def stWin = "${buildDir}/script-template.bat"
-def taskSS = rootProject.tasks.getByPath('startScripts')
-taskSS.unixStartScriptGenerator.template = resources.text.fromFile(stNix)
-taskSS.windowsStartScriptGenerator.template = resources.text.fromFile(stWin)
-
-startScripts {
+tasks.register('createStartScriptLositemp', CreateStartScripts) {
+	description = 'Creates OS specific scripts (for temporal version of application).'
 	dependsOn processScriptTemplates
+	applicationName = 'lositemp'
+	mainClass = project.mainClassName
+	defaultJvmOpts = project.defaultJvmArguments
+	outputDir = new File(buildDir, 'scripts')
+	unixStartScriptGenerator.template = resources.text.fromFile("${buildDir}/script-templates/script-template-lositemp.sh")
+	windowsStartScriptGenerator.template = resources.text.fromFile("${buildDir}/script-templates/script-template-lositemp.bat")
 	doLast {
 		unixScript.text = unixScript.text.replaceAll('\'"(.+?)"\'', '$1')
 	}
 }
 
-task createStartScriptMcheza(type: CreateStartScripts, dependsOn: startScripts) {
+tasks.register('createStartScriptMcheza', CreateStartScripts) {
 	description = 'Creates OS specific scripts (for Mcheza/dominant version of application).'
+	dependsOn processScriptTemplates
 	applicationName = 'mcheza'
-	def ss = rootProject.tasks.getByPath('startScripts')
-	defaultJvmOpts = ss.defaultJvmOpts
-	classpath = ss.classpath
-	mainClassName = ss.mainClassName
-	outputDir = ss.outputDir
-	unixStartScriptGenerator.template = ss.unixStartScriptGenerator.template
+	mainClass = project.mainClassName
+	defaultJvmOpts = project.defaultJvmArguments
+	outputDir = new File(buildDir, 'scripts')
+	unixStartScriptGenerator.template = resources.text.fromFile("${buildDir}/script-templates/script-template-mcheza.sh")
+	windowsStartScriptGenerator.template = resources.text.fromFile("${buildDir}/script-templates/script-template-mcheza.bat")
 	doLast {
-		unixScript.text = unixScript.text.replaceAll('\'"(.+?)"\'', '$1').replace('.jar"', '.jar" dominant').replace('title.gif', 'mcheza.jpg').replace('LOSITAN', 'MCHEZA')
-		windowsScript.text = windowsScript.text.replace('.jar"', '.jar" dominant').replace('title.gif', 'mcheza.jpg')
+		unixScript.text = unixScript.text.replaceAll('\'"(.+?)"\'', '$1')
 	}
 }
 
-task createStartScriptLositemp(type: CreateStartScripts, dependsOn: startScripts) {
-	description = 'Creates OS specific scripts (for temporal version of application).'
-	applicationName = 'lositemp'
-	def ss = rootProject.tasks.getByPath('startScripts')
-	defaultJvmOpts = ss.defaultJvmOpts
-	classpath = ss.classpath
-	mainClassName = ss.mainClassName
-	outputDir = ss.outputDir
-	unixStartScriptGenerator.template = ss.unixStartScriptGenerator.template
+startScripts {
+	dependsOn processScriptTemplates, createStartScriptLositemp, createStartScriptMcheza
+	unixStartScriptGenerator.template = resources.text.fromFile("${buildDir}/script-templates/script-template.sh")
+	windowsStartScriptGenerator.template = resources.text.fromFile("${buildDir}/script-templates/script-template.bat")
 	doLast {
-		unixScript.text = unixScript.text.replaceAll('\'"(.+?)"\'', '$1').replace('.jar"', '.jar" temp').replace('LOSITAN', 'LOSITEMP')
-		windowsScript.text = windowsScript.text.replace('.jar"', '.jar" temp')
+		unixScript.text = unixScript.text.replaceAll('\'"(.+?)"\'', '$1')
 	}
 }
 
-task distributions(dependsOn: [startScripts, installDist, assembleDist, createStartScriptMcheza, createStartScriptLositemp]) {
+tasks.register('distributions') {
+	dependsOn startScripts, installDist, assembleDist
 	group = 'distribution'
 	description = 'Assembles all standard distributions.'
 }
@@ -202,8 +203,15 @@ distributions {
 	main {
 		contents {
 			from(packageBioPython) {
-				into "lib/Lib"
+				into 'lib/Lib'
+			}
+			from("${projectDir}/mcheza.jpg") {
+				into 'lib'
+			}
+			from("${projectDir}/title.gif") {
+				into 'lib'
 			}
 		}
 	}
 }
+distTar.enabled = false
