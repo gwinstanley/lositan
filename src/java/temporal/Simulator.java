@@ -1,22 +1,20 @@
 package temporal;
 
-
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
 /**
- *
  * @author Nina Overgaard Therkildsen
  * @author Samitha Samaranayake
  */
 public class Simulator {
-	    
+
     /**
      * Creates the allele frequency for each locus in the initial generation. The frequency values are
      * picked such that the frequency is sampled from a distribution that will result in a uniform
      * distribution of heterozygosity.
      * @param numberOfLoci - Number of loci to create
-     * @returns frequency values for the first generation
+     * @return frequency values for the first generation
      */
     private double[] createInitialGeneration(int numberOfLoci) {
         double[] firstGeneration = new double[numberOfLoci];
@@ -43,7 +41,7 @@ public class Simulator {
      * of the new generation.
      * @param prevFreq - Allele frequencies in the previous generation
      * @param populationSize - Size of the population from which to regenerate
-     * @returns Allele frequencies of the current generation
+     * @return Allele frequencies of the current generation
      */
     private double computeNewFreq(double prevFreq, int populationSize) {
         double newFreq = 0;
@@ -58,25 +56,25 @@ public class Simulator {
     }
 
     /**
-     * Creates a vector of specific realized sample sizes for each simulated locus. 
+     * Creates a vector of specific realized sample sizes for each simulated locus.
      * Varies between 0.85 and 1 * the input sampleSize to mimic the presence of missing data and reduce discretization of He and Ftemp
      */
     private double[] createSamplingVector(int numberOfLoci, int sampleSize) {
         double samplingVariance = 0.15;
 		double[] samplingVector = new double[numberOfLoci];
-        for (int i=0; i<numberOfLoci; i++) {  
+        for (int i=0; i<numberOfLoci; i++) {
             samplingVector[i] = Math.round(sampleSize * (1 - Math.random()*samplingVariance));
         }
         return samplingVector;
     }
-    
-   
+
+
     /**
      * Simulates the dynamics of the population over a number of generations
      * @param initialGeneration - The allele frequencies of the initial generation
      * @param numberOfGenerations - The number of generations to simulate
      * @param populationSize - The size of the population (needed for regeneration)
-     * @returns Allele frequencies over all generations
+     * @return Allele frequencies over all generations
      */
     private double[][] simulateGenerations(double[] initialGeneration, int numberOfGenerations,
             int populationSize) {
@@ -101,7 +99,7 @@ public class Simulator {
      * @param populationSize - The size of the population
      * @param generationsToSample - The set of generations from which to sample
      * @param samplingVector - A vector a specific sample size for each locus in every generation
-     * @returns Allele frequencies for the sample set in each of the specified generations
+     * @return Allele frequencies for the sample set in each of the specified generations
      */
     public double[][] sampleGenerations(double[][] freqOverGenerations, int populationSize, int[] generationsToSample,
                                         double[] samplingVector) {
@@ -137,7 +135,7 @@ public class Simulator {
      * Computes the ftemp metric for each locus using the formula var[p]/E[p](1-E[p]) - 1/2n
      * @param freqMatrix - Allele frequencies over all generations
      * @param samplingVector - A vector a specific sample size for each locus in every generation
-     * @returns ftemp value for each locus
+     * @return ftemp value for each locus
      */
     public double[] computeFTemp(double[][] freqMatrix, double[] samplingVector) {
         double fTemp[] = new double[freqMatrix[0].length];
@@ -165,7 +163,7 @@ public class Simulator {
     /**
      * Computes the heterozygosity for each locus using the formula 2p(1-p)
      * @param freqMatrix - Allele frequencies over all generations
-     * @returns heterozygosity for each locus
+     * @return heterozygosity for each locus
      */
     public double[] computeHetroz(double[][] freqMatrix) {
         double[][] hetroz = new double[freqMatrix.length][freqMatrix[0].length];
@@ -201,7 +199,7 @@ public class Simulator {
      * Finds the mean value of a given column in a matrix
      * @param matrix - Input matrix
      * @param column - The column number of which to compute the mean
-     * @returns The mean value of the column of interest
+     * @return The mean value of the column of interest
      */
     private double findColMean(double[][] matrix, int column) {
         double mean=0;
@@ -225,7 +223,7 @@ public class Simulator {
      * Finds the population variance (NOT sample variance) of a given column in a matrix.
      * @param matrix - Input matrix
      * @param column - The column number of which to compute the variance
-     * @returns The variance of the column of interest
+     * @return The variance of the column of interest
      */
     private double findColVariance(double[][] matrix, double mean, int column) {
         double var=0;
@@ -250,7 +248,7 @@ public class Simulator {
      /**
      * Finds the maximum value of the vector
      * @param matrix - Input vector
-     * @returns The maximum value in the vector
+     * @return The maximum value in the vector
      */
     private int vectorMax(int[] matrix) {
         int max=0;
@@ -291,7 +289,6 @@ public class Simulator {
     /**
      * Displays a matrix
      * @param matrix - Matrix to display
-     * @returns none
      */
     public void displayOutput(double[][] matrix) {
         for (int i=0; i < matrix.length; i++) {
@@ -306,7 +303,6 @@ public class Simulator {
     /**
      * Displays a vector
      * @param vector - Vector to display
-     * @returns none
      */
     public void displayOutput(double[] vector) {
         for (int i=0; i < vector.length; i++) {
@@ -385,7 +381,7 @@ public class Simulator {
                 //   for (int i=0; i<numberOfLoci; i++) {
                 //        System.out.format("Locus %3d:     %.4f, %.4f%n", (i+1), meanHetroz[i], fTemp[i]);
                 //    }
-                
+
                     writeFile(outFileName, meanHetroz, fTemp);
 
         } catch (Exception e){ // if there are any exceptions catch them
@@ -394,12 +390,6 @@ public class Simulator {
 
     }
 
-    /**
-     *
-     * @param args the command line arguments
-     * @throws
-     * @returns
-     */
     public static void main(String[] args) {
         double initialGeneration[];
         double freqOverGenerations[][];

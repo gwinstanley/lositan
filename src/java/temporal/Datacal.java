@@ -39,10 +39,8 @@ public class Datacal {
      *   .
      *   .
      * etc.
-     * @param inputFile - input file name with path
-     * @param outputFile - output file name with path
-     * @throws none
-     * @returns none
+     * @param inFile input file name with path
+     * @param outFile output file name with path
      */
     public void compute(String inFile, String outFile) {
         int indicator;
@@ -224,11 +222,9 @@ public class Datacal {
         }
     }
         /**
-     * Takes the number of generations that the samples span and computes the Ne value for the population. 
-     * @param numberOfGenerations - number of generations that the samples span. Could be different from the 
+     * Takes the number of generations that the samples span and computes the Ne value for the population.
+     * @param numberOfGenerations - number of generations that the samples span. Could be different from the
      *  index of the last sample number
-     * @throws none
-     * @returns none
      */
     public void computeNe(int numberOfGenerations) {
         if (!initialzed) {
